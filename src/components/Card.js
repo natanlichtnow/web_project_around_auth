@@ -3,8 +3,13 @@ import { CurrentUserContext } from '../contexts/CurrentUserContext';
 
 function Card({ card, onCardClick, onCardLike, onCardDelete }) {
   const currentUser = useContext(CurrentUserContext);
+
+  
   const isOwn = card.owner === currentUser._id;
-  const isLiked = card.likes && card.likes.some((like) => like === currentUser._id);
+const isLiked =
+  currentUser?._id &&
+  Array.isArray(card.likes) &&
+  card.likes.some((user) => user._id === currentUser._id);
 
   return (
     <li className="card">
@@ -33,7 +38,7 @@ function Card({ card, onCardClick, onCardLike, onCardDelete }) {
         </div>
       </div>
     </li>
+    
   );
 }
-
 export default Card;

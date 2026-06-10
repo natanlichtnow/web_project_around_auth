@@ -1,18 +1,24 @@
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../images/logo.svg';
 
 function Header({ loggedIn, userEmail, onSignOut }) {
   const location = useLocation();
 
   return (
     <header className="header">
-      <div className="header__logo">&#9670; EUA Afora</div>
+      <img
+        src={logo}
+        alt="Around the U.S"
+        className="header__logo"
+      />
+
       <nav className="header__nav">
         {loggedIn ? (
           <>
             <span className="header__email">{userEmail}</span>
             <button
-              className="header__link header__link_type_signout"
               type="button"
+              className="header__link header__link_type_signout"
               onClick={onSignOut}
             >
               Sair
@@ -23,7 +29,9 @@ function Header({ loggedIn, userEmail, onSignOut }) {
             className="header__link"
             to={location.pathname === '/signin' ? '/signup' : '/signin'}
           >
-            {location.pathname === '/signin' ? 'Inscreva-se' : 'Entrar'}
+            {location.pathname === '/signin'
+              ? 'Inscreva-se'
+              : 'Entrar'}
           </Link>
         )}
       </nav>

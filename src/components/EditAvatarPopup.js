@@ -30,4 +30,6 @@ function EditAvatarPopup({ isOpen, onClose, onUpdateAvatar }) {
   );
 }
 
+
+
 export default EditAvatarPopup;

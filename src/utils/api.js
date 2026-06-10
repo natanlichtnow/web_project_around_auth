@@ -1,5 +1,4 @@
-const BASE_URL = 'https://se-register-api.en.tripleten-services.com/v1';
-
+const BASE_URL = 'https://around-api.pt-br.tripleten-services.com/v1';
 const checkResponse = (res) => {
   if (res.ok) return res.json();
   return Promise.reject(`Erro: ${res.status}`);
@@ -8,12 +7,11 @@ const checkResponse = (res) => {
 const getToken = () => localStorage.getItem('jwt');
 
 const request = (endpoint, options = {}) => {
-  const token = getToken();
   return fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers: {
+      authorization: '9ba0b934-682f-4473-a788-94b2f44b2896',
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   }).then(checkResponse);
