@@ -6,11 +6,9 @@ function Card({ card, onCardClick, onCardLike, onCardDelete }) {
 
   
   const isOwn = card.owner === currentUser._id;
-const isLiked =
-  currentUser?._id &&
-  Array.isArray(card.likes) &&
-  card.likes.some((user) => user._id === currentUser._id);
-
+  console.log('CARD LIKES:', card.likes);
+console.log('CURRENT USER:', currentUser._id);
+const isLiked = card.isLiked;
   return (
     <li className="card">
       {isOwn && (
@@ -33,8 +31,9 @@ const isLiked =
             className={`card__like-button ${isLiked ? 'card__like-button_active' : ''}`}
             type="button"
             onClick={() => onCardLike(card)}
-          />
-          <span className="card__like-count">{card.likes ? card.likes.length : 0}</span>
+          /><span className="card__like-count">
+  {card.isLiked ? 1 : 0}
+</span>
         </div>
       </div>
     </li>

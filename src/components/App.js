@@ -12,7 +12,7 @@ import EditProfilePopup from './EditProfilePopup';
 import EditAvatarPopup from './EditAvatarPopup';
 import AddPlacePopup from './AddPlacePopup';
 import ImagePopup from './ImagePopup';
-
+import ConfirmDeletePopup from './ConfirmDeletePopup';
 import { CurrentUserContext } from '../contexts/CurrentUserContext';
 import api from '../utils/api';
 import * as auth from '../utils/auth';
@@ -29,7 +29,7 @@ function App() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
-
+  const [cardToDelete, setCardToDelete] = useState(null);
   const history = useHistory();
 
   // ESC close popups
@@ -78,24 +78,19 @@ function App() {
   }, [history]);
 
   // load user + cards
-  useEffect(() => {
-    if (loggedIn) {
-      Promise.all([api.getUserInfo(), api.getInitialCards()])
-        .then(([userData, cardsData]) => {
-          setCurrentUser(userData);
-          setCards(
-            Array.isArray(cardsData)
-              ? cardsData.map((c) => ({
-                  ...c,
-                  likes: Array.isArray(c.likes) ? c.likes : [],
-                }))
-              : []
-          );
-        })
-        .catch(console.error);
-    }
-  }, [loggedIn]);
+useEffect(() => {
+  if (loggedIn) {
+    Promise.all([api.getUserInfo(), api.getInitialCards()])
+      .then(([userData, cardsData]) => {
+        console.log('CARDS FROM API:', cardsData);
 
+        setCurrentUser(userData);
+
+       setCards(cardsData);
+      })
+      .catch((err) => console.error(err));
+  }
+}, [loggedIn]);
   // auth
   const handleRegister = (email, password) => {
     auth.register(email, password)
@@ -132,40 +127,29 @@ function App() {
   };
 
   // LIKE FIX
-  const handleCardLike = (card) => {
-    const likes = Array.isArray(card.likes) ? card.likes : [];
-    const isLiked = likes.includes(currentUser._id);
-
-    api.changeLikeCardStatus(card._id, isLiked)
-      .then(() => {
-        setCards((state) =>
-          state.map((c) => {
-            if (c._id !== card._id) return c;
-
-            const safeLikes = Array.isArray(c.likes) ? c.likes : [];
-
-            return {
-              ...c,
-              likes: isLiked
-                ? safeLikes.filter((id) => id !== currentUser._id)
-                : [...safeLikes, currentUser._id],
-            };
-          })
-        );
-      })
-      .catch(console.error);
-  };
-
+const handleCardLike = (card) => {
+  api.changeLikeCardStatus(card._id, card.isLiked)
+    .then((updatedCard) => {
+      setCards((state) =>
+        state.map((c) =>
+          c._id === card._id ? updatedCard : c
+        )
+      );
+    })
+    .catch(console.error);
+};
   // delete card
   const handleCardDelete = (card) => {
-    api.deleteCard(card._id)
-      .then(() => {
-        setCards((state) =>
-          state.filter((c) => c._id !== card._id)
-        );
-      })
-      .catch(console.error);
-  };
+  api.deleteCard(card._id)
+    .then(() => {
+      setCards((state) =>
+        state.filter((c) => c._id !== card._id)
+      );
+
+      closeAllPopups();
+    })
+    .catch(console.error);
+};
 
   // update user
   const handleUpdateUser = (data) => {
@@ -203,6 +187,7 @@ function App() {
     setIsEditAvatarPopupOpen(false);
     setSelectedCard(null);
     setIsInfoTooltipOpen(false);
+    setCardToDelete(null);
   };
 
   return (
@@ -226,7 +211,7 @@ function App() {
             onEditAvatar={() => setIsEditAvatarPopupOpen(true)}
             onCardClick={setSelectedCard}
             onCardLike={handleCardLike}
-            onCardDelete={handleCardDelete}
+            onCardDelete={(card) => setCardToDelete(card)}
           />
 
           <Route path="/signup">
@@ -272,6 +257,13 @@ function App() {
           onClose={closeAllPopups}
           isSuccess={isRegistrationSuccess}
         />
+        <ConfirmDeletePopup
+  isOpen={!!cardToDelete}
+  onClose={closeAllPopups}
+  onConfirm={() => {
+    handleCardDelete(cardToDelete);
+  }}
+/>
       </div>
     </CurrentUserContext.Provider>
   );
